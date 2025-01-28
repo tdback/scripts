@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# background: Set the background using `feh`.
+
+IMAGES="$HOME/.local/backgrounds"
+
+if [ "$1" = "-r" ]; then
+  feh --bg-scale --randomize "$IMAGES"
+  exit
+fi
+
+SELECTED=$(find "$IMAGES" -type f -printf '%f\n' | fzf)
+
+[ -n "$SELECTED" ] && feh --bg-scale "$IMAGES/$SELECTED"

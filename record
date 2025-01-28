@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# record: Record an mp4 video using ffmpeg. By default it will output the
+# video to './out.mp4'. Requires ffmpeg to be built with Xcb support on NixOS.
+# Screen resolution can be specified, but defaults to 1080p.
+
+die() { echo "$0: $*" >&2; exit 1; }
+try() { "$@" || die "cannot $*"; }
+
+while getopts ":r:h" args; do
+  case "$args" in
+    r) RESOLUTION="$OPTARG" ;;
+    h) die "record [-r RESOLUTION] FILE" ;;
+    *) die "-$OPTARG is not an option." ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+FILE="${1:-out}"
+: "${RESOLUTION:=1920x1080}"
+
+try ffmpeg -y -f x11grab -s "$RESOLUTION" -framerate 60 -i :0.0 -f alsa \
+           -i default -nostats -hide_banner -loglevel quiet "${FILE}.mp4"

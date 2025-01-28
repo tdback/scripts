@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# mpc_update: Update an mpd playlist to include new songs in the music
+# directory.
+
+die() { echo "$0: $*" >&2; exit 1; }
+try() { "$@" || die "cannot $*"; }
+
+[ "$#" -ne 2 ] && die "usage: mpc_update <playlist> <music directory>"
+
+PLAYLIST="$1"
+MUSIC_DIR="$2"
+
+[ -d "$MUSIC_DIR" ] && cd "$MUSIC_DIR" ||
+  die "music directory '$MUSIC_DIR' does not exist!"
+
+# Clear the current playlist to prevent song duplication in mpd.
+[ -e "$HOME/.local/share/mpd/playlists/${PLAYLIST}.m3u" ] &&
+  try mpc clear >/dev/null &&
+  try mpc rm "$PLAYLIST"
+
+# Add every song in the music directory.
+try mpc add -- *
+
+try mpc save "$PLAYLIST"

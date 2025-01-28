@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# testzed: A useful utility for testing ZFS ZED configurations.
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "script requires root privileges" >&2
+  exit 1
+fi
+
+FILE=/tmp/testzed_file
+POOL="test"
+
+# Create throwaway pool.
+dd if=/dev/zero of=$FILE bs=1 count=0 seek=512M
+zpool create $POOL $FILE
+
+# Scrub the pool (which will finish instantly) to send out a notification.
+# Ensure that ZED is configured with the option `ZED_NOTIFY_VERBOSE=1` to
+# receive an email even if no errors occurred.
+zpool scrub $POOL
+
+# Clean up after ourselves.
+zpool export $POOL
+rm $FILE

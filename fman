@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# fman: Fuzzy find man pages! Requires `fzf`.
+
+apropos . | fzf --prompt "Select program: " | cut -d" " -f 1 | xargs man

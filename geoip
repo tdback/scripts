@@ -1,0 +1,66 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -i python3 --pure -p 'python3.withPackages (p: [ p.requests ])'
+
+import argparse
+import requests
+import socket
+import sys
+
+API = "http://ip-api.com/json"
+
+
+def valid_ip(address: str) -> bool:
+    """Check if the given address is a valid IPv4 address."""
+    try:
+        socket.inet_pton(socket.AF_INET, address)
+    except AttributeError:  # No inet_pton.
+        try:
+            socket.inet_aton(address)
+        except socket.error:
+            return False
+        return address.count(".") == 3
+    except socket.error:  # Not a valid address.
+        return False
+    return True
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="geoip",
+        description="Geolocate an IPv4 address.",
+    )
+
+    parser.add_argument(dest="address", help="IPv4 address to locate")
+
+    args = parser.parse_args()
+
+    if not valid_ip(args.address):
+        print(f"'{args.address}' is not a valid IPv4 address", file=sys.stderr)
+        exit(1)
+
+    res = requests.get(f"{API}/{args.address}")
+    if res.status_code != 200:
+        print(
+            f"Something went wrong: returned {res.status_code}",
+            file=sys.stderr,
+        )
+
+    data = res.json()
+    if data["status"] == "fail":
+        print(f"Querying '{data['query']}' failed", file=sys.stderr)
+        exit(1)
+
+    # Not every address will have a zip code, so adjust the format accordingly.
+    loc = (
+        f"{data['query']} is located in {data['city']}, {data['regionName']}"
+        + (f", {data['zip']} " if data["zip"] else " ")
+        + data["country"]
+    )
+
+    print(loc)
+
+
+if __name__ == "__main__":
+    main()
+
+# vim:ft=python

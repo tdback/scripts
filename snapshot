@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# snapshot: Take a screenshot using ImageMagick. Assumes `dunst` daemon is
+# running when sending notifications.
+
+set -eu
+
+SCREENSHOT_DIR="$HOME/.local/screenshots"
+SCREENSHOT_NAME="$SCREENSHOT_DIR/$(date '+%F_%R-%S' | sed 's/:/-/g').png"
+
+_end() {
+  dunstify "Screenshot captured:\n$SCREENSHOT_NAME"
+  display "$SCREENSHOT_NAME"
+  [ -t 1 ] && echo "$SCREENSHOT_NAME"
+  exit 0
+}
+
+region() {
+  import "$SCREENSHOT_NAME"
+  _end
+}
+
+full() {
+  import -window root "$SCREENSHOT_NAME"
+  _end
+}
+
+[ -d "$SCREENSHOT_DIR" ] || mkdir -p "$SCREENSHOT_DIR"
+
+[ "$#" -eq 0 ] && region
+
+while getopts ":f" arg; do
+  case "$arg" in
+    f) full ;;
+    *) printf "Invalid option: -%s\n" "$OPTARG" >&2 && exit 1 ;;
+  esac
+done

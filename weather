@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# weather: Quickly check the weather forecast.
+
+DEFAULT="grand+rapids"
+
+CITY=$(echo "$1" | tr ' ' '+')
+: "${CITY:=$DEFAULT}"
+
+curl -s "https://wttr.in/$CITY" | head -n -2
