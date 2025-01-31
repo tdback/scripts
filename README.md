@@ -8,6 +8,6 @@ Some scripts require the following to be installed and in your system path:
 - ffmpeg (with Xcb support)
 - fzf
 - ImageMagick
-- python3 (with requests library)
+- uv
 - zpool
 - $EDITOR environment variable set

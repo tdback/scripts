@@ -1,5 +1,7 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i python3 --pure -p 'python3.withPackages (p: [ p.requests ])'
+#!/usr/bin/env -S uv run -qs
+# /// script
+# dependencies = ["requests"]
+# ///
 
 import argparse
 import requests
