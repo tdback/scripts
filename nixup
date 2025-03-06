@@ -1,0 +1,44 @@
+#!/bin/sh
+# -*- mode: sh; -*-
+
+# nixup: Deploy a nix flake from the current directory to a remote host.
+
+set -eu
+
+# Make a quick check to see if there is a flake in the current directory
+# with deploy-rs as an input.
+if [ ! "$(find . -maxdepth 0 -name 'flake.nix')" ] &&
+     ! grep -q 'deploy-rs' ./flake.nix; then
+  echo "Could not find a flake with 'deploy-rs' in the current directory" >&2
+  exit 1
+fi
+
+BUILD_LOCAL=false
+while getopts ":hl" arg; do
+  case "$arg" in
+    l) BUILD_LOCAL=true ;;
+    h) echo "Usage: nixup [-h] [-l] HOST" >&2
+       exit 1
+       ;;
+    *) printf "Invalid option: -%s\nSee '-h' for usage\n" "$OPTARG" >&2
+       exit 1
+       ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [ "$#" -ne 1 ]; then
+  echo "Please specify a host. See '-h' for usage" >&2
+  exit 1
+fi
+
+deploy_args=".#$1 -s --auto-rollback false"
+if [ "$BUILD_LOCAL" != true ]; then
+  deploy_args="$deploy_args --remote-build"
+fi
+
+# Deploy the configuration.
+deploy $deploy_args
+
+# Copy the flake to the remote host.
+rsync -ax --delete ./ "$1":/etc/nixos/
