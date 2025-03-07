@@ -32,6 +32,8 @@ full() {
 while getopts ":f" arg; do
   case "$arg" in
     f) full ;;
-    *) printf "Invalid option: -%s\n" "$OPTARG" >&2 && exit 1 ;;
+    *) printf "Invalid option: -%s\n" "$OPTARG" >&2
+       exit 1
+       ;;
   esac
 done

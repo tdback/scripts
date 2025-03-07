@@ -13,7 +13,9 @@ if [ ! "$(find . -maxdepth 0 -name 'flake.nix')" ] &&
   exit 1
 fi
 
+# By default build the configuration on the remote host.
 BUILD_LOCAL=false
+
 while getopts ":hl" arg; do
   case "$arg" in
     l) BUILD_LOCAL=true ;;
